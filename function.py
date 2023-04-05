@@ -8,16 +8,19 @@ def draw_lines(img, lines, color = [255, 0, 0], thickness = 2):
         for line in lines:
             for x1,y1,x2,y2 in line:
                 cv2.line(img, (x1, y1), (x2, y2), color, thickness)
-def separate_left_right_lines(lines):
+def separate_left_right_lines(lines,imgMid):
     """Separate left and right lines depending on the slope."""
     left_lines = []
     right_lines = []
     if lines is not None:
         for line in lines:
             for x1, y1, x2, y2 in line:
-                if y1 > y2: # Negative slope = left lane.
+                if y1 > y2:
+                    x1,y1,x2,y2 = x2,y2,x1,y1
+                    
+                if x2 < imgMid: # Negative slope = left lane.
                     left_lines.append([x1, y1, x2, y2])
-                elif y1 < y2: # Positive slope = right lane.
+                elif x2 > imgMid: # Positive slope = right lane.
                     right_lines.append([x1, y1, x2, y2])
     return left_lines, right_lines
 def cal_avg(values):
@@ -51,7 +54,6 @@ def extrapolate_lines(lines, upper_border, lower_border):
     x_lane_upper_point = int((upper_border - avg_consts) / (avg_slope+1e-5))
     
     return [x_lane_lower_point, lower_border, x_lane_upper_point, upper_border]
-
 def distance(x1, y1, x2, y2, px, py):
     # Calculate the distance between the point and the vector
     dx = x2 - x1

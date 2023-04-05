@@ -5,7 +5,7 @@ import math
 from function import *
 import pygame
 import sys
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture('gaKhanh.mp4')
 counting = 0
 fps = 0
 in1 = 37 #left 
@@ -73,7 +73,7 @@ while True:
     high_threshold = 255
     canny_blur = cv2.Canny(roi_blur, low_threshold, high_threshold)
 
-    lines = cv2.HoughLinesP(canny_blur, 1, np.pi/180, 100, np.array([]), minLineLength=200, maxLineGap=100)
+    lines = cv2.HoughLinesP(canny_blur, 1, np.pi/180, 120, np.array([]), minLineLength=150, maxLineGap=20)
 
     # Draw all lines found onto a new image.
     hough = np.zeros((img.shape[0], img.shape[1], 3), dtype = np.uint8)
@@ -88,7 +88,7 @@ while True:
 
     # Use above defined function to identify lists of left-sided and right-sided lines.
     
-    lines_left, lines_right = separate_left_right_lines(lines)
+    lines_left, lines_right = separate_left_right_lines(lines,img.shape[1]/2)
 
     # Use above defined function to extrapolate the lists of lines into recognized lanes.
     lane_left = extrapolate_lines(lines_left, roi_upper_border, roi_lower_border)
@@ -130,6 +130,8 @@ while True:
     
     cv2.putText(image_annotated, 'Fps: '+str(round(fps,2)), (50,50), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color= (255, 255, 255), lineType=2)
     result = cv2.cvtColor(image_annotated, cv2.COLOR_BGR2RGB)
+    cv2.imshow('canny',canny_blur)
+    cv2.imshow('res',image_annotated)
 
     # Convert the result to a Pygame surface
     result = np.rot90(result)

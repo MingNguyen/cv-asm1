@@ -159,7 +159,6 @@ def make_way(id,img,roi_vertices,threshold,minLineLength,lanes_img,center_point)
     x_mid_line = None
     if lane_left is not None and lane_right is not None:# and not np.isnan(lane_left).any() and not np.isnan(lane_right).any():
         midline_x1=int((x1_left + x1_right)/2)
-        x_mid_line
         midline_x2=int((x2_left + x2_right)/2)
 
         cv2.line(lanes_img,(midline_x1,y1_left),(midline_x2,y2_left),(0,255,0),10)
@@ -179,7 +178,7 @@ def make_way(id,img,roi_vertices,threshold,minLineLength,lanes_img,center_point)
             cv2.putText(lanes_img, "Right: "+ str(round(dis_mm,2)) + 'mm', (50,100), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color= (255, 255, 255), lineType=2)
 
     image_annotated = cv2.addWeighted(img, 0.8, lanes_img, 1, 0)
-    return image_annotated,lane_left,lane_right,x_mid_line
+    return image_annotated,lane_left,lane_right,midline_x1
 def calculate_ratio(warp):
     CHESSBOARD_CORNER_NUM_X = 9
     CHESSBOARD_CORNER_NUM_Y = 6
@@ -205,21 +204,26 @@ def calculate_ratio(warp):
 def calculate_cam_distance(image):
     return
 def nextMove(imshape,leftLines,rightLines, x_mid_line):
-    goodinterval = [imshape[1] * 2/5, imshape[1] * 4/5]
+    goodinterval = [imshape[1] * 2/5, imshape[1] * 3/5]
+    rightSpeed = 0
+    leftSpeed = 0
     if leftLines is None and rightLines is None:
-        rightSpeed = 0
+        rightSpeed = 10
         leftSpeed = 25
     elif leftLines is None:
         rightSpeed = 25
-        leftSpeed = 0
+        leftSpeed = 10
     elif  rightLines is None:
-        rightSpeed = 0
+        rightSpeed = 10
+        leftSpeed = 35
+    elif x_mid_line is None:
+        rightSpeed = 10
         leftSpeed = 35
     elif x_mid_line < goodinterval[0]:
         rightSpeed = 35
-        leftSpeed = 0
+        leftSpeed = 10
     elif x_mid_line > goodinterval[1]:
-        rightSpeed = 0
+        rightSpeed = 10
         leftSpeed = 40
     elif goodinterval[0] < x_mid_line <goodinterval[1]:
         rightSpeed = 50

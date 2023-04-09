@@ -13,8 +13,8 @@ in1 = 37 #left
 in2 = 35 #left //forward
 in3 = 33 #right //forward
 in4 = 31 #right 
-leftSpeed = 120
-rightSpeed = 120
+leftSpeed = 0
+rightSpeed = 0
 midline_x1 = None
 lane_left,lane_right=None,None
 src_ref=np.float32([(250,0),(1150,0),(0,720),(1280,720)])
@@ -46,8 +46,7 @@ while True:
         print('video ended')
         break
     # Use global threshold based on grayscale intensity.
-    lanes_img,leftLines,rightLines,midline_x1 = np.zeros((img.shape[0], img.shape[1], 3), dtype = np.uint8)
-    nextMove(img.shape,leftLines,rightLines,midline_x1)
+    lanes_img = np.zeros((img.shape[0], img.shape[1], 3), dtype = np.uint8)
     
     width = img.shape[1]
     height = img.shape[0]
@@ -61,19 +60,17 @@ while True:
     center_point_warp = point_warp(center_point,M)
 
     warp = perspective_warp(distort, src_ref, dst_ref)
-    image_annotated,lanes_img = make_way('1',img=img,roi_vertices=roi_vertices_down,threshold=(200,255),minLineLength=100,lanes_img=lanes_img,center_point=center_point_warp)  
-    
+    image_annotated,lane_left,lane_right,midline_x1 = make_way('1',img=img,roi_vertices=roi_vertices_down,threshold=(200,255),minLineLength=100,lanes_img=lanes_img,center_point=center_point_warp)  
+    leftSpeed,rightSpeed = nextMove(img.shape,lane_left,lane_right,midline_x1)
+    GPIO.output(in1,0)
+    GPIO.output(in2,leftSpeed)
+    GPIO.output(in3,rightSpeed)
+    GPIO.output(in4,0)
+    print("speed:",leftSpeed,"       ",rightSpeed)
+    print("coordinate:",midline_x1)
 
     cv2.putText(image_annotated, 'Fps: '+str(round(fps,2)), (50,50), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color= (255, 255, 255), lineType=2)
-
-
-    #show on pygame window
-    result = cv2.cvtColor(image_annotated, cv2.COLOR_BGR2RGB)
-    result = np.rot90(result)
-    result = result[::-1,:,:]
-
-    # Display the results, and save image to file.
-    image_annotated = cv2.cvtColor(image_annotated, cv2.COLOR_BGR2RGB)
+    cv2.imshow('result',image_annotated)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
     
